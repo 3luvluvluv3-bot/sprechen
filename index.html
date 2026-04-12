@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>독일어 쉐도잉</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F3EE;
+  --surface: #FFFFFF;
+  --surface2: #EEECE7;
+  --border: #DDD9D0;
+  --border2: #C8C4BB;
+  --text: #1C1B18;
+  --text2: #7A776E;
+  --text3: #B0ADA5;
+  --accent: #4A42A8;
+  --accent-light: #EEEDFE;
+  --accent-mid: #7F77DD;
+  --green: #1A8A5A;
+  --green-light: #E6F5EE;
+  --amber: #8A5A10;
+  --amber-light: #FDF3E0;
+  --red: #A32D2D;
+  --red-light: #FCEBEB;
+  --p1-color: #4A42A8;
+  --p2-color: #1A8A5A;
+  --p3-color: #8A5A10;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+/* Tab Bar */
+.tab-bar {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 1.5rem;
+  background: var(--surface2);
+  border-radius: var(--radius-lg);
+  padding: 3px;
+}
+.tab {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: var(--text2);
+  border-radius: var(--radius-md);
+  font-family: 'DM Sans', sans-serif;
+  transition: all .15s;
+  text-align: center;
+}
+.tab.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+.page { display: none; }
+.page.active { display: block; }
+
+/* Set Cards */
+.set-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem; }
+.set-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+.set-card:hover { border-color: var(--accent-mid); box-shadow: 0 2px 8px rgba(74,66,168,.08); }
+.set-card.selected { border-color: var(--accent); border-width: 1.5px; }
+.set-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.set-name { font-size: 15px; font-weight: 500; }
+.set-meta { font-size: 12px; color: var(--text2); margin-top: 3px; }
+.set-actions { display: flex; gap: 4px; }
+.icon-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 14px; padding: 3px 6px;
+  color: var(--text2); border-radius: var(--radius-sm);
+  transition: background .12s;
+}
+.icon-btn:hover { background: var(--surface2); }
+.progress-mini { height: 3px; background: var(--surface2); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+.progress-mini-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .4s; }
+
+/* Add Form */
+.add-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+.field-label {
+  font-size: 11px; font-weight: 500; color: var(--text2);
+  margin-bottom: 5px; text-transform: uppercase; letter-spacing: .06em;
+}
+input[type=text] {
+  width: 100%; border: 1px solid var(--border2);
+  border-radius: var(--radius-md); padding: 9px 12px;
+  font-size: 14px; font-family: 'DM Sans', sans-serif;
+  color: var(--text); background: var(--bg); margin-bottom: 10px;
+  transition: border-color .15s;
+}
+input[type=text]:focus { outline: none; border-color: var(--accent); }
+textarea {
+  width: 100%; border: 1px solid var(--border2);
+  border-radius: var(--radius-md); padding: 9px 12px;
+  font-size: 13px; font-family: 'DM Mono', monospace;
+  color: var(--text); background: var(--bg);
+  resize: vertical; min-height: 160px; line-height: 1.7;
+  transition: border-color .15s;
+}
+textarea:focus { outline: none; border-color: var(--accent); }
+.hint {
+  font-size: 12px; color: var(--text2); margin-bottom: .75rem;
+  background: var(--bg); padding: 8px 12px;
+  border-radius: var(--radius-sm); line-height: 1.7;
+  border-left: 2px solid var(--border2);
+}
+.btn-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.btn {
+  padding: 9px 20px; border-radius: var(--radius-md);
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; border: none;
+  transition: all .15s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #3C3489; }
+.btn-ghost {
+  background: none; border: 1px solid var(--border2);
+  color: var(--text);
+}
+.btn-ghost:hover { background: var(--surface2); }
+.btn-wide { width: 100%; margin-bottom: 8px; }
+
+/* Practice */
+.prac-header { margin-bottom: .75rem; }
+.prac-title { font-size: 16px; font-weight: 500; }
+.prac-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+/* Phase bar */
+.phase-bar {
+  display: flex; gap: 5px; margin-bottom: .75rem;
+  align-items: center; flex-wrap: wrap;
+}
+.phase-chip {
+  font-size: 11px; padding: 4px 11px; border-radius: 20px;
+  font-weight: 500; border: 1px solid var(--border);
+  color: var(--text2); background: var(--surface);
+  transition: all .2s;
+}
+.phase-chip.active-p1 { background: var(--accent-light); color: var(--p1-color); border-color: var(--accent-mid); }
+.phase-chip.active-p2 { background: var(--green-light); color: var(--p2-color); border-color: #5DCAA5; }
+.phase-chip.active-p3 { background: var(--amber-light); color: var(--p3-color); border-color: #EF9F27; }
+.phase-desc { font-size: 11px; color: var(--text3); flex: 1; text-align: right; }
+
+/* Sentence card */
+.sentence-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1.75rem 1.5rem;
+  margin-bottom: .75rem; min-height: 170px;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  text-align: center; position: relative;
+  transition: border-color .2s;
+  border-top-width: 3px;
+}
+.sentence-card.phase1 { border-top-color: var(--accent); }
+.sentence-card.phase2 { border-top-color: var(--green); }
+.sentence-card.phase3 { border-top-color: var(--amber); }
+.sentence-card.neutral { border-top-color: var(--border); }
+
+.star-btn {
+  position: absolute; top: 12px; right: 14px;
+  background: none; border: none; font-size: 18px;
+  cursor: pointer; opacity: .3; transition: opacity .15s; line-height: 1;
+}
+.star-btn.on { opacity: 1; }
+.rep-indicator {
+  position: absolute; top: 12px; left: 14px;
+  font-size: 11px; color: var(--text2);
+  background: var(--surface2); border-radius: 20px;
+  padding: 2px 9px; font-weight: 500;
+}
+
+.lv-badge {
+  font-size: 11px; padding: 3px 11px; border-radius: 20px;
+  background: var(--accent-light); color: var(--accent);
+  margin-bottom: .6rem; font-weight: 500;
+}
+.lv-dots { display: flex; gap: 5px; justify-content: center; margin-bottom: .6rem; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--surface2); }
+.dot.done { background: var(--accent-mid); }
+.dot.cur { background: var(--accent); }
+
+.de-text {
+  font-size: 21px; font-weight: 400; color: var(--text);
+  line-height: 1.7; margin-bottom: .75rem; word-break: break-word;
+}
+.word { display: inline; }
+.word.hidden {
+  background: var(--surface2); color: transparent;
+  border-radius: 3px; padding: 0 2px;
+  user-select: none; display: inline-block; min-width: 2ch;
+}
+.word.revealed {
+  background: var(--accent-light); color: var(--accent);
+  border-radius: 3px; padding: 0 2px;
+}
+.ko-text { font-size: 14px; color: var(--text2); line-height: 1.6; }
+
+/* Action area */
+.action-area { margin-bottom: .75rem; }
+.rec-time {
+  font-size: 11px; color: var(--text2); text-align: center;
+  min-height: 16px; margin-bottom: 5px;
+}
+.rec-check-row {
+  display: flex; gap: 8px; justify-content: center;
+  align-items: center; margin-bottom: 8px; flex-wrap: wrap;
+}
+.rec-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 9px 16px; border-radius: var(--radius-md);
+  font-size: 13px; cursor: pointer;
+  border: 1px solid var(--border2);
+  background: var(--surface); color: var(--text);
+  font-family: 'DM Sans', sans-serif; transition: all .15s;
+}
+.rec-btn:hover { background: var(--surface2); }
+.rec-btn.recording { background: var(--red-light); border-color: #E24B4A; color: var(--red); }
+.rec-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border2); flex-shrink: 0; transition: background .2s; }
+.rec-btn.recording .rec-dot { background: #E24B4A; animation: blink 1s infinite; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+.play-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 9px 16px; border-radius: var(--radius-md);
+  font-size: 13px; cursor: pointer;
+  border: 1px solid var(--border2);
+  background: var(--surface); color: var(--text);
+  font-family: 'DM Sans', sans-serif; transition: all .15s;
+}
+.play-btn:hover { background: var(--surface2); }
+.play-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+.check-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 9px 20px; border-radius: var(--radius-md);
+  font-size: 13px; cursor: pointer; border: none;
+  background: var(--accent); color: #fff;
+  font-family: 'DM Sans', sans-serif; font-weight: 500;
+  transition: all .15s;
+}
+.check-btn:hover { background: #3C3489; }
+.check-btn:disabled { background: var(--surface2); color: var(--text3); cursor: not-allowed; }
+
+/* OX verdict */
+.verdict-row { display: flex; gap: 16px; justify-content: center; margin-bottom: .75rem; }
+.v-btn {
+  width: 64px; height: 64px; border-radius: 50%;
+  font-size: 26px; cursor: pointer; border: none;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 500; transition: transform .12s;
+}
+.v-btn:hover { transform: scale(1.1); }
+.v-btn:active { transform: scale(.93); }
+.v-o { background: var(--green-light); color: var(--green); }
+.v-x { background: var(--red-light); color: var(--red); }
+
+/* Nav */
+.nav-row { display: flex; justify-content: space-between; align-items: center; }
+.nav-btn {
+  padding: 7px 14px; border: 1px solid var(--border2);
+  border-radius: var(--radius-md); background: var(--surface);
+  color: var(--text); font-size: 13px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: background .12s;
+}
+.nav-btn:hover { background: var(--surface2); }
+.nav-btn:disabled { opacity: .3; cursor: not-allowed; }
+.sent-counter { font-size: 13px; color: var(--text2); }
+
+/* Session done */
+.session-done { text-align: center; padding: 2.5rem 1rem; }
+.session-done h2 { font-size: 20px; font-weight: 500; margin-bottom: .5rem; }
+.session-done p { color: var(--text2); font-size: 13px; margin-bottom: 1.25rem; }
+
+/* Stats */
+.stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 1rem; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: .75rem 1rem; text-align: center; }
+.stat-num { font-size: 24px; font-weight: 500; }
+.stat-lbl { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.phase-stat {
+  font-size: 13px; color: var(--text2); margin-bottom: .75rem;
+  padding: .65rem .9rem; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  display: flex; gap: 1rem; flex-wrap: wrap;
+}
+.phase-stat-item { display: flex; align-items: center; gap: 5px; }
+.ps-dot { width: 8px; height: 8px; border-radius: 50%; }
+.sent-list { display: flex; flex-direction: column; gap: 5px; max-height: 420px; overflow-y: auto; }
+.sent-row {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: .55rem .85rem;
+  display: flex; justify-content: space-between;
+  align-items: center; font-size: 12px;
+}
+.sent-de { color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.badges { display: flex; gap: 3px; flex-shrink: 0; margin-left: 6px; align-items: center; }
+.badge { font-size: 10px; padding: 1px 6px; border-radius: 20px; }
+.badge-p1 { background: var(--accent-light); color: var(--p1-color); }
+.badge-p2 { background: var(--green-light); color: var(--p2-color); }
+.badge-p3 { background: var(--amber-light); color: var(--p3-color); }
+.badge-ok { background: var(--green-light); color: var(--green); }
+.badge-ng { background: var(--red-light); color: var(--red); }
+.badge-star { background: var(--amber-light); color: var(--amber); }
+
+.empty { text-align: center; padding: 2.5rem 1rem; color: var(--text2); font-size: 14px; }
+
+/* Mic permission modal */
+.mic-modal-overlay {
+  position: fixed; inset: 0; background: rgba(28,27,24,.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999; padding: 1rem;
+  animation: fadeIn .15s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.mic-modal {
+  background: var(--surface); border-radius: var(--radius-lg);
+  padding: 1.5rem; max-width: 400px; width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,.18);
+  animation: slideUp .18s ease;
+}
+@keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.mic-modal h3 { font-size: 16px; font-weight: 500; margin-bottom: .4rem; }
+.mic-modal .mic-sub { font-size: 13px; color: var(--text2); margin-bottom: 1rem; line-height: 1.6; }
+.mic-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.25rem; }
+.mic-step {
+  display: flex; gap: 10px; align-items: flex-start;
+  background: var(--bg); border-radius: var(--radius-md);
+  padding: .65rem .85rem;
+}
+.mic-step-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  font-size: 11px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.mic-step-txt { font-size: 13px; color: var(--text); line-height: 1.55; }
+.mic-step-txt b { font-weight: 500; color: var(--accent); }
+.mic-browser-tabs { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+.mic-browser-tab {
+  padding: 4px 12px; border-radius: 20px; font-size: 12px;
+  cursor: pointer; border: 1px solid var(--border2);
+  background: var(--surface2); color: var(--text2);
+  font-family: 'DM Sans', sans-serif; transition: all .12s;
+}
+.mic-browser-tab.on { background: var(--accent-light); color: var(--accent); border-color: var(--accent-mid); }
+.mic-modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* Order mode toggle */
+.order-toggle {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: .75rem;
+}
+.order-toggle-label { font-size: 12px; color: var(--text2); }
+.toggle-group {
+  display: flex; border: 1px solid var(--border2);
+  border-radius: 20px; overflow: hidden; background: var(--surface2);
+}
+.toggle-opt {
+  padding: 4px 13px; font-size: 12px; font-weight: 500;
+  cursor: pointer; border: none; background: none;
+  color: var(--text2); font-family: 'DM Sans', sans-serif;
+  transition: all .15s; white-space: nowrap;
+}
+.toggle-opt.on {
+  background: var(--surface); color: var(--accent);
+  border-radius: 20px; margin: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="tab-bar">
+    <button class="tab active" onclick="showPage('sets')">세트 관리</button>
+    <button class="tab" onclick="showPage('practice')">연습</button>
+    <button class="tab" onclick="showPage('stats')">진척도</button>
+  </div>
+
+  <!-- SETS PAGE -->
+  <div class="page active" id="page-sets">
+    <div id="set-list" class="set-list"></div>
+    <button class="btn btn-ghost btn-wide" onclick="toggleAddForm()" id="add-toggle-btn">+ 새 세트 추가</button>
+    <div class="add-form" id="add-form" style="display:none">
+      <div class="field-label">세트 이름</div>
+      <input type="text" id="set-name-input" placeholder="예: Kapitel 3 — 일상 표현">
+      <div class="field-label">문장 입력</div>
+      <div class="hint">형식: 독일어 문장 → 줄바꿈 → [한국어 번역] → 빈 줄 → 다음 문장<br>예) Ich lerne jeden Tag Deutsch.<br>[나는 매일 독일어를 공부해.]</div>
+      <textarea id="bulk-input" placeholder="Ich lerne jeden Tag Deutsch.
+[나는 매일 독일어를 공부해.]
+
+Das Wetter ist heute schön.
+[오늘 날씨가 정말 좋아.]
+
+Kannst du mir bitte helfen?
+[나를 도와줄 수 있어?]"></textarea>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveSet()">저장</button>
+        <button class="btn btn-ghost" onclick="toggleAddForm()">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRACTICE PAGE -->
+  <div class="page" id="page-practice">
+    <div id="no-set-msg" class="empty">세트 관리 탭에서 세트를 선택하세요.</div>
+    <div id="practice-content" style="display:none">
+      <div class="prac-header">
+        <div class="prac-title" id="prac-title"></div>
+        <div class="prac-sub" id="prac-sub"></div>
+      </div>
+
+      <div class="order-toggle">
+        <span class="order-toggle-label">문장 순서</span>
+        <div class="toggle-group">
+          <button class="toggle-opt on" id="mode-seq" onclick="setOrderMode('seq')">순서대로</button>
+          <button class="toggle-opt" id="mode-rnd" onclick="setOrderMode('rnd')">랜덤</button>
+        </div>
+      </div>
+
+      <div class="phase-bar" id="phase-bar">
+        <div class="phase-chip" id="pc1">① 집중</div>
+        <div class="phase-chip" id="pc2">② 혼합</div>
+        <div class="phase-chip" id="pc3">③ 전체 복습</div>
+        <div class="phase-desc" id="phase-desc"></div>
+      </div>
+
+      <div class="sentence-card neutral" id="prac-card">
+        <div class="rep-indicator" id="rep-indicator" style="display:none"></div>
+        <button class="star-btn" id="star-btn" onclick="toggleStar()">☆</button>
+        <div class="lv-badge" id="lv-badge"></div>
+        <div class="lv-dots" id="lv-dots"></div>
+        <div class="de-text" id="de-disp"></div>
+        <div class="ko-text" id="ko-disp"></div>
+      </div>
+
+      <div class="action-area" id="action-area">
+        <div class="rec-time" id="rec-time"></div>
+        <div class="rec-check-row">
+          <button class="rec-btn" id="rec-btn" onclick="toggleRecord()">
+            <span class="rec-dot" id="rec-dot"></span>
+            <span id="rec-label">녹음</span>
+          </button>
+          <button class="play-btn" id="play-btn" onclick="playRecording()" disabled>▶ 듣기</button>
+          <button class="check-btn" id="check-btn" onclick="revealAnswers()">정답 확인</button>
+        </div>
+        <div class="verdict-row" id="verdict-row" style="display:none">
+          <button class="v-btn v-o" onclick="verdict(true)">○</button>
+          <button class="v-btn v-x" onclick="verdict(false)">✕</button>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button class="nav-btn" id="p-prev" onclick="manualNav(-1)">← 이전</button>
+        <span class="sent-counter" id="p-counter"></span>
+        <button class="nav-btn" id="p-next" onclick="manualNav(1)">다음 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS PAGE -->
+  <div class="page" id="page-stats">
+    <div id="no-stats-msg" class="empty">세트를 선택하면 진척도가 표시돼요.</div>
+    <div id="stats-content" style="display:none">
+      <div class="prac-title" id="stats-title" style="margin-bottom:.75rem"></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num" id="st-total"></div><div class="stat-lbl">전체 문장</div></div>
+        <div class="stat-card"><div class="stat-num" id="st-p3"></div><div class="stat-lbl">전체복습 단계</div></div>
+        <div class="stat-card"><div class="stat-num" id="st-star"></div><div class="stat-lbl">별표</div></div>
+      </div>
+      <div class="phase-stat" id="phase-stat-txt"></div>
+      <div class="sent-list" id="stats-sent-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Mic Permission Modal -->
+<div class="mic-modal-overlay" id="mic-modal" style="display:none" onclick="closeMicModal(event)">
+  <div class="mic-modal" onclick="event.stopPropagation()">
+    <h3>🎤 마이크 권한 허용 방법</h3>
+    <p class="mic-sub">브라우저에서 마이크 사용을 허용해야 녹음할 수 있어요. 아래에서 브라우저를 선택해주세요.</p>
+    <div class="mic-browser-tabs">
+      <button class="mic-browser-tab on" id="mb-chrome" onclick="showBrowserGuide('chrome')">Chrome</button>
+      <button class="mic-browser-tab" id="mb-safari" onclick="showBrowserGuide('safari')">Safari</button>
+      <button class="mic-browser-tab" id="mb-firefox" onclick="showBrowserGuide('firefox')">Firefox</button>
+      <button class="mic-browser-tab" id="mb-edge" onclick="showBrowserGuide('edge')">Edge</button>
+    </div>
+    <div class="mic-steps" id="mic-steps-content"></div>
+    <div class="mic-modal-btns">
+      <button class="btn btn-ghost" onclick="closeMicModal()">닫기</button>
+      <button class="btn btn-primary" onclick="retryRecord()">다시 시도</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const HIDE_LEVELS = [0, 0.35, 0.6, 0.85, 1.0];
+const HIDE_LABELS = ["전체 보기", "일부 가리기", "절반 가리기", "대부분 가리기", "번역만 보기"];
+
+let sets = [], activeSetId = null, editingSetId = null;
+let sessionQueue = [], sqPos = 0, answersRevealed = false;
+let orderMode = 'seq'; // 'seq' | 'rnd'
+let mediaRecorder = null, audioChunks = [], audioBlob = null, audioUrl = null, isRecording = false;
+let recInterval = null, recSec = 0;
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function getSet(id) { return sets.find(s => s.id === id); }
+function getActive() { return getSet(activeSetId); }
+
+function parseBulk(raw) {
+  const lines = raw.split('\n');
+  const out = [];
+  let de = '', ko = '';
+  for (let l of lines) {
+    l = l.trim();
+    if (!l) { if (de) { out.push(makeSent(de, ko)); de = ''; ko = ''; } continue; }
+    const m = l.match(/^\[(.+)\]$/);
+    if (m) { ko = m[1]; } else { if (de) { out.push(makeSent(de, ko)); ko = ''; } de = l; }
+  }
+  if (de) out.push(makeSent(de, ko));
+  return out;
+}
+
+function makeSent(de, ko) {
+  return { id: uid(), de, ko, phase: 1, repsDone: 0, hideIdx: 0, correct: 0, wrong: 0, star: false, streak: 0 };
+}
+
+function saveSet() {
+  const name = document.getElementById('set-name-input').value.trim() || '이름 없는 세트';
+  const raw = document.getElementById('bulk-input').value.trim();
+  const sents = parseBulk(raw);
+  if (!sents.length) { alert('문장을 입력해주세요.'); return; }
+  if (editingSetId) {
+    const s = getSet(editingSetId);
+    const existMap = {};
+    s.sentences.forEach(x => existMap[x.de] = x);
+    s.name = name;
+    s.sentences = sents.map(x => existMap[x.de] || x);
+    editingSetId = null;
+  } else {
+    sets.push({ id: uid(), name, sentences: sents });
+  }
+  closeAddForm();
+  renderSetList();
+}
+
+function deleteSet(id, e) {
+  e.stopPropagation();
+  if (!confirm('이 세트를 삭제할까요?')) return;
+  sets = sets.filter(s => s.id !== id);
+  if (activeSetId === id) activeSetId = null;
+  renderSetList();
+}
+
+function selectSet(id) {
+  activeSetId = id;
+  renderSetList();
+  buildSession();
+  showPage('practice');
+}
+
+function editSet(id, e) {
+  e.stopPropagation();
+  const s = getSet(id);
+  document.getElementById('set-name-input').value = s.name;
+  document.getElementById('bulk-input').value = s.sentences.map(x => `${x.de}\n[${x.ko}]`).join('\n\n');
+  editingSetId = id;
+  document.getElementById('add-form').style.display = 'block';
+  document.getElementById('add-toggle-btn').textContent = '닫기';
+  document.getElementById('add-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+function toggleAddForm() {
+  const f = document.getElementById('add-form');
+  if (f.style.display === 'none') {
+    f.style.display = 'block';
+    document.getElementById('add-toggle-btn').textContent = '닫기';
+    editingSetId = null;
+  } else closeAddForm();
+}
+
+function closeAddForm() {
+  document.getElementById('add-form').style.display = 'none';
+  document.getElementById('add-toggle-btn').textContent = '+ 새 세트 추가';
+  document.getElementById('set-name-input').value = '';
+  document.getElementById('bulk-input').value = '';
+}
+
+function renderSetList() {
+  const el = document.getElementById('set-list');
+  if (!sets.length) { el.innerHTML = '<div class="empty">아직 세트가 없어요. 아래에서 추가해보세요!</div>'; return; }
+  el.innerHTML = sets.map(s => {
+    const total = s.sentences.length;
+    const p3 = s.sentences.filter(x => x.phase === 3).length;
+    const pct = total ? Math.round(p3 / total * 100) : 0;
+    const stars = s.sentences.filter(x => x.star).length;
+    const sel = s.id === activeSetId ? ' selected' : '';
+    return `<div class="set-card${sel}" onclick="selectSet('${s.id}')">
+      <div class="set-card-header">
+        <div>
+          <div class="set-name">${s.name}</div>
+          <div class="set-meta">${total}문장${stars ? ' · ★' + stars : ''} · 전체복습 ${pct}%</div>
+        </div>
+        <div class="set-actions">
+          <button class="icon-btn" onclick="editSet('${s.id}',event)">✏️</button>
+          <button class="icon-btn" onclick="deleteSet('${s.id}',event)">🗑</button>
+        </div>
+      </div>
+      <div class="progress-mini"><div class="progress-mini-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ---- Order mode ----
+function setOrderMode(mode) {
+  orderMode = mode;
+  document.getElementById('mode-seq').classList.toggle('on', mode === 'seq');
+  document.getElementById('mode-rnd').classList.toggle('on', mode === 'rnd');
+  buildSession();
+}
+
+// ---- Session Builder ----
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = 0 | Math.random() * (i + 1);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function maybeShuffleP1(arr) {
+  // In 'seq' mode keep original insertion order; in 'rnd' shuffle
+  return orderMode === 'rnd' ? shuffle([...arr]) : [...arr];
+}
+
+function buildSession() {
+  const s = getActive();
+  if (!s) { sessionQueue = []; sqPos = 0; return; }
+  const sents = s.sentences;
+  const p1 = sents.filter(x => x.phase === 1);
+  const p2 = sents.filter(x => x.phase === 2);
+  const p3 = sents.filter(x => x.phase === 3);
+  const queue = [];
+
+  if (p1.length > 0) {
+    // In seq mode: always pick the first unlearned sentence; in rnd: pick randomly
+    const orderedP1 = orderMode === 'rnd' ? shuffle([...p1]) : [...p1];
+    const focus = orderedP1[0];
+    const startHide = focus.hideIdx;
+    for (let r = 0; r < 3; r++) {
+      const hIdx = Math.min(startHide + r, HIDE_LEVELS.length - 2);
+      queue.push({ sentId: focus.id, phase: 1, hideIdx: hIdx, rep: r + 1 });
+    }
+    const pool = [...p2.slice(0, 3), ...orderedP1.slice(1, 3)];
+    if (orderMode === 'rnd') shuffle(pool);
+    pool.forEach(x => queue.push({ sentId: x.id, phase: x.phase, hideIdx: Math.min(x.hideIdx, 3) }));
+    if (orderedP1.length > 1) {
+      const next = orderedP1[1];
+      queue.push({ sentId: next.id, phase: 1, hideIdx: 0, rep: 1 });
+      queue.push({ sentId: next.id, phase: 1, hideIdx: 1, rep: 2 });
+      queue.push({ sentId: focus.id, phase: 1, hideIdx: Math.min(startHide + 2, 3), rep: 3 });
+      queue.push({ sentId: next.id, phase: 1, hideIdx: 2, rep: 3 });
+    }
+  } else if (p2.length > 0) {
+    const mixed = orderMode === 'rnd' ? shuffle([...p2]) : [...p2];
+    mixed.forEach(x => queue.push({ sentId: x.id, phase: 2, hideIdx: Math.min(x.hideIdx, 3) }));
+    const p3sample = p3.slice().sort((a, b) => a.correct - b.correct).slice(0, 3);
+    p3sample.forEach(x => queue.push({ sentId: x.id, phase: 3, hideIdx: 3 }));
+  } else {
+    // Phase 3: weakest-first always, but shuffle equally-weak items in rnd mode
+    let sorted = [...p3].sort((a, b) => {
+      const ra = a.correct / (a.correct + a.wrong + .01);
+      const rb = b.correct / (b.correct + b.wrong + .01);
+      return ra - rb;
+    });
+    if (orderMode === 'rnd') shuffle(sorted);
+    sorted.forEach(x => queue.push({ sentId: x.id, phase: 3, hideIdx: Math.min(x.hideIdx, 4) }));
+  }
+
+  sessionQueue = queue;
+  sqPos = 0;
+  resetRecording();
+  renderPractice();
+}
+
+function getSent(id) {
+  return getActive() && getActive().sentences.find(x => x.id === id);
+}
+
+function shuffleIdx(n, k) {
+  const a = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) { const j = 0 | Math.random() * (i + 1); [a[i], a[j]] = [a[j], a[i]]; }
+  return new Set(a.slice(0, k));
+}
+
+function renderPractice() {
+  const s = getActive();
+  const pc = document.getElementById('practice-content');
+  const nm = document.getElementById('no-set-msg');
+  if (!s) { pc.style.display = 'none'; nm.style.display = 'block'; return; }
+  pc.style.display = 'block'; nm.style.display = 'none';
+  answersRevealed = false;
+
+  if (!sessionQueue.length || sqPos >= sessionQueue.length) { showSessionDone(); return; }
+
+  const item = sessionQueue[sqPos];
+  const sent = getSent(item.sentId);
+  if (!sent) { sqPos++; renderPractice(); return; }
+
+  const phase = item.phase;
+  const hideIdx = item.hideIdx;
+  const hideRatio = HIDE_LEVELS[hideIdx];
+
+  document.getElementById('prac-title').textContent = s.name;
+  document.getElementById('prac-sub').textContent = `세션 ${sqPos + 1} / ${sessionQueue.length}`;
+  document.getElementById('p-counter').textContent = `${sqPos + 1} / ${sessionQueue.length}`;
+  document.getElementById('p-prev').disabled = sqPos === 0;
+  document.getElementById('p-next').disabled = sqPos === sessionQueue.length - 1;
+
+  const pLabels = ['active-p1', 'active-p2', 'active-p3'];
+  ['pc1', 'pc2', 'pc3'].forEach((id, i) => {
+    document.getElementById(id).className = 'phase-chip' + (phase === i + 1 ? ' ' + pLabels[i] : '');
+  });
+  const phaseDescs = { 1: '같은 문장 집중 반복', 2: '여러 문장 섞어 연습', 3: '전체 무작위 복습' };
+  document.getElementById('phase-desc').textContent = phaseDescs[phase] || '';
+
+  const card = document.getElementById('prac-card');
+  card.className = 'sentence-card phase' + phase;
+
+  const ri = document.getElementById('rep-indicator');
+  if (phase === 1 && item.rep) { ri.style.display = 'block'; ri.textContent = `${item.rep}/3회`; }
+  else ri.style.display = 'none';
+
+  const sb = document.getElementById('star-btn');
+  sb.textContent = sent.star ? '★' : '☆';
+  sb.classList.toggle('on', sent.star);
+
+  document.getElementById('lv-badge').textContent = HIDE_LABELS[hideIdx];
+  document.getElementById('lv-dots').innerHTML = HIDE_LEVELS.map((_, i) =>
+    `<div class="dot${i < hideIdx ? ' done' : i === hideIdx ? ' cur' : ''}"></div>`).join('');
+
+  const words = sent.de.split(' ');
+  const hideN = Math.round(words.length * hideRatio);
+  const hiddenSet = shuffleIdx(words.length, hideN);
+
+  let html = '';
+  if (hideRatio === 1.0) { html = ''; }
+  else { html = words.map((w, i) => hiddenSet.has(i) ? `<span class="word hidden">${w}</span>` : `<span class="word">${w}</span>`).join(' '); }
+
+  document.getElementById('de-disp').innerHTML = html;
+  document.getElementById('ko-disp').textContent = sent.ko;
+
+  document.getElementById('verdict-row').style.display = 'none';
+  document.getElementById('action-area').style.display = 'block';
+  const cb = document.getElementById('check-btn');
+  cb.disabled = false; cb.textContent = '정답 확인';
+}
+
+function showSessionDone() {
+  const card = document.getElementById('prac-card');
+  card.className = 'sentence-card neutral';
+  card.innerHTML = `<div class="session-done">
+    <h2>세션 완료! 🎉</h2>
+    <p>이번 세션의 문장을 모두 연습했어요.</p>
+    <button class="btn btn-primary" onclick="buildSession()">다음 세션 시작</button>
+  </div>`;
+  document.getElementById('action-area').style.display = 'none';
+  document.getElementById('p-counter').textContent = '완료';
+  document.getElementById('p-prev').disabled = true;
+  document.getElementById('p-next').disabled = true;
+  document.getElementById('phase-desc').textContent = '';
+}
+
+function revealAnswers() {
+  if (answersRevealed) return;
+  answersRevealed = true;
+  const item = sessionQueue[sqPos];
+  const sent = getSent(item.sentId);
+  const hideRatio = HIDE_LEVELS[item.hideIdx];
+  if (hideRatio === 1.0) {
+    document.getElementById('de-disp').textContent = sent.de;
+  } else {
+    document.querySelectorAll('#de-disp .word.hidden').forEach(s => {
+      s.classList.remove('hidden'); s.classList.add('revealed');
+    });
+  }
+  document.getElementById('verdict-row').style.display = 'flex';
+  const cb = document.getElementById('check-btn');
+  cb.disabled = true; cb.textContent = '확인 완료';
+}
+
+function verdict(correct) {
+  const item = sessionQueue[sqPos];
+  const sent = getSent(item.sentId);
+  if (!sent) return;
+
+  if (correct) {
+    sent.correct++; sent.streak++;
+    if (sent.phase === 1) {
+      sent.repsDone++; sent.hideIdx = Math.min(sent.hideIdx + 1, 3);
+      if (sent.repsDone >= 3) { sent.phase = 2; sent.repsDone = 0; sent.hideIdx = 2; }
+    } else if (sent.phase === 2) {
+      sent.repsDone++; sent.hideIdx = Math.min(sent.hideIdx + 1, 4);
+      if (sent.repsDone >= 3) { sent.phase = 3; sent.repsDone = 0; sent.hideIdx = 3; }
+    } else {
+      sent.hideIdx = Math.min(sent.hideIdx + 1, 4);
+    }
+  } else {
+    sent.wrong++; sent.streak = 0;
+    if (sent.phase === 3) {
+      sent.phase = 2; sent.repsDone = 0; sent.hideIdx = Math.max(0, sent.hideIdx - 1);
+    } else if (sent.phase === 2) {
+      sent.repsDone = Math.max(0, sent.repsDone - 1);
+      sent.hideIdx = Math.max(0, sent.hideIdx - 1);
+    } else {
+      sent.repsDone = 0; sent.hideIdx = Math.max(0, sent.hideIdx - 1);
+    }
+  }
+
+  resetRecording();
+  sqPos++;
+  if (sqPos >= sessionQueue.length) {
+    renderSetList(); showSessionDone();
+  } else {
+    renderPractice(); renderSetList();
+  }
+}
+
+function toggleStar() {
+  const item = sessionQueue[sqPos];
+  if (!item) return;
+  const sent = getSent(item.sentId);
+  if (!sent) return;
+  sent.star = !sent.star;
+  const sb = document.getElementById('star-btn');
+  sb.textContent = sent.star ? '★' : '☆';
+  sb.classList.toggle('on', sent.star);
+  renderSetList();
+}
+
+function manualNav(d) {
+  const next = sqPos + d;
+  if (next >= 0 && next < sessionQueue.length) { sqPos = next; resetRecording(); renderPractice(); }
+}
+
+// ---- Recording ----
+function resetRecording() {
+  if (isRecording) stopRecord();
+  isRecording = false; audioBlob = null;
+  if (audioUrl) { URL.revokeObjectURL(audioUrl); audioUrl = null; }
+  audioChunks = []; clearInterval(recInterval); recSec = 0;
+  document.getElementById('rec-btn').classList.remove('recording');
+  document.getElementById('rec-label').textContent = '녹음';
+  document.getElementById('play-btn').disabled = true;
+  document.getElementById('rec-time').textContent = '';
+}
+
+async function toggleRecord() {
+  if (isRecording) stopRecord(); else await startRecord();
+}
+
+async function startRecord() {
+  const timeEl = document.getElementById('rec-time');
+
+  // API 존재 여부 확인
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    timeEl.textContent = '⚠ 이 브라우저는 마이크를 지원하지 않아요.';
+    return;
+  }
+
+  // 바로 getUserMedia 호출 — 브라우저가 권한 팝업을 직접 띄워줌
+  try {
+    timeEl.textContent = '';
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    timeEl.textContent = '';
+    audioChunks = [];
+
+    // 지원 코덱 자동 선택
+    const mimeTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
+    const mime = mimeTypes.find(t => MediaRecorder.isTypeSupported(t)) || '';
+    mediaRecorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
+    mediaRecorder.onerror = e => {
+      timeEl.textContent = '⚠ 녹음 오류: ' + (e.error?.message || '알 수 없음');
+      stopRecord();
+    };
+    mediaRecorder.onstop = () => {
+      if (!audioChunks.length) return;
+      audioBlob = new Blob(audioChunks, { type: mime || 'audio/webm' });
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      audioUrl = URL.createObjectURL(audioBlob);
+      document.getElementById('play-btn').disabled = false;
+      stream.getTracks().forEach(t => t.stop());
+    };
+
+    mediaRecorder.start(100);
+    isRecording = true; recSec = 0;
+    document.getElementById('rec-btn').classList.add('recording');
+    document.getElementById('rec-label').textContent = '중지';
+    recInterval = setInterval(() => {
+      recSec++;
+      const m = String(0 | recSec / 60).padStart(2, '0');
+      const s = String(recSec % 60).padStart(2, '0');
+      timeEl.textContent = `녹음 중 ${m}:${s}`;
+    }, 1000);
+
+  } catch (e) {
+    // 오류 이름을 그대로 표시해서 정확히 뭔지 파악
+    if (e.name === 'NotAllowedError') {
+      timeEl.textContent = '🔒 권한 거부됨 — 아래 안내를 따라주세요';
+      showMicModal();
+    } else if (e.name === 'NotFoundError') {
+      timeEl.textContent = '⚠ 마이크 장치를 찾을 수 없어요.';
+    } else {
+      timeEl.textContent = `⚠ 오류 (${e.name}): ${e.message}`;
+    }
+  }
+}
+
+// ---- Mic Permission Modal ----
+const BROWSER_GUIDES = {
+  chrome: [
+    { n: '1', t: '주소창 왼쪽의 <b>🔒 자물쇠(또는 ⓘ)</b> 아이콘을 클릭하세요.' },
+    { n: '2', t: '<b>사이트 설정</b>을 선택하세요.' },
+    { n: '3', t: '<b>마이크</b> 항목을 찾아 <b>허용</b>으로 변경하세요.' },
+    { n: '4', t: '페이지를 새로고침한 뒤 <b>다시 시도</b>를 눌러주세요.' },
+  ],
+  safari: [
+    { n: '1', t: '상단 메뉴에서 <b>Safari → 설정(Preferences)</b>을 여세요.' },
+    { n: '2', t: '<b>웹사이트(Websites)</b> 탭 → <b>마이크</b>를 클릭하세요.' },
+    { n: '3', t: '현재 사이트 옆 드롭다운을 <b>허용</b>으로 바꾸세요.' },
+    { n: '4', t: '페이지를 새로고침한 뒤 <b>다시 시도</b>를 눌러주세요.' },
+  ],
+  firefox: [
+    { n: '1', t: '주소창 왼쪽의 <b>🔒 자물쇠</b> 아이콘을 클릭하세요.' },
+    { n: '2', t: '<b>연결 보안 → 추가 정보</b>를 클릭하세요.' },
+    { n: '3', t: '<b>권한</b> 탭에서 <b>마이크 사용</b>을 <b>허용</b>으로 바꾸세요.' },
+    { n: '4', t: '페이지를 새로고침한 뒤 <b>다시 시도</b>를 눌러주세요.' },
+  ],
+  edge: [
+    { n: '1', t: '주소창 왼쪽의 <b>🔒 자물쇠(또는 ⓘ)</b> 아이콘을 클릭하세요.' },
+    { n: '2', t: '<b>이 사이트의 권한</b>을 선택하세요.' },
+    { n: '3', t: '<b>마이크</b> 항목을 <b>허용</b>으로 변경하세요.' },
+    { n: '4', t: '페이지를 새로고침한 뒤 <b>다시 시도</b>를 눌러주세요.' },
+  ],
+};
+let currentBrowser = 'chrome';
+
+function detectBrowser() {
+  const ua = navigator.userAgent;
+  if (ua.includes('Edg/')) return 'edge';
+  if (ua.includes('Firefox/')) return 'firefox';
+  if (ua.includes('Safari/') && !ua.includes('Chrome')) return 'safari';
+  return 'chrome';
+}
+
+function showMicModal() {
+  currentBrowser = detectBrowser();
+  document.getElementById('mic-modal').style.display = 'flex';
+  showBrowserGuide(currentBrowser);
+}
+
+function closeMicModal(e) {
+  if (e && e.target !== document.getElementById('mic-modal')) return;
+  document.getElementById('mic-modal').style.display = 'none';
+}
+
+function showBrowserGuide(browser) {
+  currentBrowser = browser;
+  ['chrome','safari','firefox','edge'].forEach(b => {
+    document.getElementById('mb-' + b).classList.toggle('on', b === browser);
+  });
+  const steps = BROWSER_GUIDES[browser] || [];
+  document.getElementById('mic-steps-content').innerHTML = steps.map(s =>
+    `<div class="mic-step">
+      <div class="mic-step-num">${s.n}</div>
+      <div class="mic-step-txt">${s.t}</div>
+    </div>`
+  ).join('');
+}
+
+async function retryRecord() {
+  document.getElementById('mic-modal').style.display = 'none';
+  await startRecord();
+}
+
+function stopRecord() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+  isRecording = false; clearInterval(recInterval);
+  document.getElementById('rec-btn').classList.remove('recording');
+  document.getElementById('rec-label').textContent = '다시 녹음';
+  document.getElementById('rec-time').textContent = '녹음 완료 — 듣고 ○✕ 로 평가하세요';
+}
+
+function playRecording() {
+  if (audioUrl) new Audio(audioUrl).play();
+}
+
+// ---- Page routing ----
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const idx = { sets: 0, practice: 1, stats: 2 }[name];
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+  if (name === 'practice') renderPractice();
+  if (name === 'stats') renderStats();
+}
+
+function renderStats() {
+  const s = getActive();
+  const nm = document.getElementById('no-stats-msg');
+  const sc = document.getElementById('stats-content');
+  if (!s) { nm.style.display = 'block'; sc.style.display = 'none'; return; }
+  nm.style.display = 'none'; sc.style.display = 'block';
+  document.getElementById('stats-title').textContent = s.name;
+  const total = s.sentences.length;
+  const p1c = s.sentences.filter(x => x.phase === 1).length;
+  const p2c = s.sentences.filter(x => x.phase === 2).length;
+  const p3c = s.sentences.filter(x => x.phase === 3).length;
+  const stars = s.sentences.filter(x => x.star).length;
+  document.getElementById('st-total').textContent = total;
+  document.getElementById('st-p3').textContent = p3c;
+  document.getElementById('st-star').textContent = stars;
+  document.getElementById('phase-stat-txt').innerHTML = `
+    <div class="phase-stat-item"><div class="ps-dot" style="background:#4A42A8"></div>집중 ${p1c}문장</div>
+    <div class="phase-stat-item"><div class="ps-dot" style="background:#1A8A5A"></div>혼합 ${p2c}문장</div>
+    <div class="phase-stat-item"><div class="ps-dot" style="background:#8A5A10"></div>전체복습 ${p3c}문장</div>`;
+  const pBadge = { 1: 'badge-p1', 2: 'badge-p2', 3: 'badge-p3' };
+  const pLabel = { 1: '집중', 2: '혼합', 3: '전체' };
+  document.getElementById('stats-sent-list').innerHTML = s.sentences.map(x => {
+    const acc = x.correct + x.wrong > 0 ? Math.round(x.correct / (x.correct + x.wrong) * 100) + '%' : '—';
+    return `<div class="sent-row">
+      <span class="sent-de">${x.de}</span>
+      <div class="badges">
+        ${x.star ? '<span class="badge badge-star">★</span>' : ''}
+        <span class="badge ${pBadge[x.phase]}">${pLabel[x.phase]}</span>
+        ${x.wrong > x.correct && x.wrong > 0 ? '<span class="badge badge-ng">✕</span>' : ''}
+        <span style="font-size:10px;color:#7A776E;min-width:26px;text-align:right">${acc}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+renderSetList();
+</script>
+</body>
+</html>
