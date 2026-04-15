@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>작문 교정 아카이브</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4f0;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:2rem}
+
+/* ── auth overlay ── */
+.auth-overlay{position:fixed;inset:0;background:#f5f4f0;display:flex;align-items:center;justify-content:center;z-index:100}
+.auth-box{background:#fff;border:0.5px solid #ddd;border-radius:16px;padding:2rem 2.5rem;width:100%;max-width:380px;box-shadow:0 2px 20px rgba(0,0,0,0.08)}
+.auth-title{font-size:18px;font-weight:500;color:#1a1a1a;margin-bottom:4px}
+.auth-sub{font-size:13px;color:#999;margin-bottom:1.5rem}
+.auth-tabs{display:flex;border:0.5px solid #ddd;border-radius:8px;overflow:hidden;margin-bottom:1.25rem}
+.auth-tab{flex:1;padding:7px;font-size:13px;border:none;background:transparent;color:#666;cursor:pointer}
+.auth-tab.active{background:#f0efe9;color:#1a1a1a;font-weight:500}
+.auth-field{margin-bottom:10px}
+.auth-field label{display:block;font-size:12px;color:#666;margin-bottom:4px}
+.auth-field input{width:100%;padding:8px 12px;font-size:13px;border:0.5px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;font-family:inherit}
+.auth-submit{width:100%;padding:9px;font-size:13px;font-weight:500;border:none;border-radius:8px;background:#1a1a1a;color:#fff;cursor:pointer;margin-top:4px}
+.auth-submit:hover{opacity:0.85}
+.auth-submit:disabled{opacity:0.4;cursor:not-allowed}
+.auth-msg{font-size:12px;margin-top:10px;min-height:18px;text-align:center}
+.auth-msg.err{color:#a32d2d}
+.auth-msg.ok{color:#3B6D11}
+
+/* ── app ── */
+.app{display:grid;grid-template-columns:270px 1fr;min-height:640px;border:0.5px solid #ddd;border-radius:12px;overflow:hidden;background:#fff;width:100%;max-width:1100px;box-shadow:0 2px 16px rgba(0,0,0,0.07)}
+
+/* ── sidebar ── */
+.sidebar{background:#f9f8f5;border-right:0.5px solid #ddd;display:flex;flex-direction:column;overflow:hidden}
+.sb-top{padding:1rem 1.25rem;border-bottom:0.5px solid #ddd}
+.sb-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px}
+.sb-title{font-size:14px;font-weight:500;color:#1a1a1a;white-space:nowrap}
+.sb-actions{display:flex;gap:6px;flex-shrink:0}
+.new-btn{font-size:12px;padding:4px 10px;border:0.5px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;cursor:pointer;white-space:nowrap}
+.new-btn:hover{background:#f0efe9}
+.allf-btn{font-size:12px;padding:4px 10px;border:0.5px solid #AFA9EC;border-radius:8px;background:#fff;color:#534AB7;cursor:pointer;white-space:nowrap}
+.allf-btn:hover,.allf-btn.active{background:#EEEDFE}
+.filter-row{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.fchip{font-size:11px;padding:3px 10px;border-radius:99px;border:0.5px solid #ccc;background:#fff;color:#666;cursor:pointer;white-space:nowrap}
+.fchip.on{font-weight:500}
+.fchip-all.on{background:#EEEDFE;color:#534AB7;border-color:#AFA9EC}
+.fchip-en.on{background:#E6F1FB;color:#185FA5;border-color:#85B7EB}
+.fchip-de.on{background:#EAF3DE;color:#3B6D11;border-color:#97C459}
+.sb-search{padding:8px 1.25rem;border-bottom:0.5px solid #ddd}
+.sb-search input{width:100%;padding:6px 10px;font-size:13px;border:0.5px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a}
+.sb-user{padding:8px 1.25rem;border-top:0.5px solid #ddd;display:flex;align-items:center;justify-content:space-between;margin-top:auto;flex-shrink:0}
+.sb-user-email{font-size:11px;color:#999;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+.signout-btn{font-size:11px;padding:3px 8px;border:0.5px solid #ddd;border-radius:6px;background:#fff;color:#666;cursor:pointer;white-space:nowrap}
+.signout-btn:hover{background:#f0efe9}
+.entries{flex:1;overflow-y:auto;padding:8px}
+.eitem{padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;border:0.5px solid transparent}
+.eitem:hover{background:#fff;border-color:#ddd}
+.eitem.active{background:#fff;border-color:#bbb}
+.etitle{font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.emeta{font-size:11px;color:#999;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.lang-badge{font-size:10px;padding:1px 6px;border-radius:99px;font-weight:500}
+.lb-en{background:#E6F1FB;color:#185FA5}
+.lb-de{background:#EAF3DE;color:#3B6D11}
+.tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:99px;margin-right:3px;margin-top:4px;border:0.5px solid transparent}
+.tg-grammar{background:#E6F1FB;color:#185FA5;border-color:#B5D4F4}
+.tg-vocab{background:#EAF3DE;color:#3B6D11;border-color:#C0DD97}
+.tg-structure{background:#EEEDFE;color:#534AB7;border-color:#CECBF6}
+.tg-style{background:#FAEEDA;color:#854F0B;border-color:#FAC775}
+
+/* ── main panel ── */
+.main{display:flex;flex-direction:column;overflow:hidden}
+.toolbar{padding:12px 1.5rem;border-bottom:0.5px solid #ddd;display:flex;align-items:center;gap:10px;flex-shrink:0;background:#fff;flex-wrap:wrap}
+.toolbar-title{font-size:15px;font-weight:500;color:#1a1a1a;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:80px}
+.vtoggle{display:flex;border:0.5px solid #ccc;border-radius:8px;overflow:hidden}
+.vbtn{padding:5px 11px;font-size:12px;border:none;background:transparent;color:#666;cursor:pointer;white-space:nowrap}
+.vbtn.active{background:#f0efe9;color:#1a1a1a;font-weight:500}
+.del-btn{font-size:12px;padding:5px 10px;border:0.5px solid #f09595;border-radius:8px;background:transparent;color:#a32d2d;cursor:pointer}
+.content{flex:1;overflow-y:auto;padding:1.25rem 1.5rem;background:#fff}
+
+/* ── compare view ── */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.tcard{border:0.5px solid #ddd;border-radius:12px;padding:1rem 1.25rem}
+.tcard-lbl{font-size:11px;font-weight:500;color:#999;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px}
+.tcard p,.tcard .prose{font-size:14px;line-height:1.85;color:#1a1a1a}
+
+/* ── feedback view ── */
+.fb-section{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+.fb-item{display:flex;gap:10px;padding:10px 12px;background:#f9f8f5;border-radius:12px;align-items:flex-start}
+.fb-add-form{border-top:0.5px solid #ddd;padding-top:1rem;margin-top:4px}
+.fb-icon{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;margin-top:1px}
+.fi-grammar{background:#E6F1FB;color:#185FA5}
+.fi-vocab{background:#EAF3DE;color:#3B6D11}
+.fi-structure{background:#EEEDFE;color:#534AB7}
+.fi-style{background:#FAEEDA;color:#854F0B}
+.fb-label{font-size:11px;font-weight:500;color:#555;margin-bottom:3px}
+.fb-text{font-size:13px;color:#1a1a1a;line-height:1.6}
+
+/* ── highlight view ── */
+.hl-del{background:#FAECE7;color:#993C1D;border-radius:3px;padding:0 2px;text-decoration:line-through;font-size:13px}
+.hl-add{background:#EAF3DE;color:#3B6D11;border-radius:3px;padding:0 2px;font-size:13px}
+.hl-change{background:#E6F1FB;color:#185FA5;border-radius:3px;padding:0 2px;font-size:13px}
+.hlmode-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.hltoggle{display:flex;border:0.5px solid #ccc;border-radius:8px;overflow:hidden}
+.hlbtn{padding:5px 12px;font-size:12px;border:none;background:transparent;color:#666;cursor:pointer;white-space:nowrap}
+.hlbtn.active{background:#f0efe9;color:#1a1a1a;font-weight:500}
+.hl-legend{font-size:12px;color:#666;display:flex;gap:8px;align-items:center}
+
+/* ── all-feedback page ── */
+.af-header{margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.af-title{font-size:15px;font-weight:500;color:#1a1a1a}
+.af-filters{display:flex;gap:6px;flex-wrap:wrap}
+.af-chip{font-size:11px;padding:3px 10px;border-radius:99px;border:0.5px solid #ccc;background:#fff;color:#666;cursor:pointer;white-space:nowrap}
+.af-chip.on{font-weight:500}
+.af-chip-all.on{background:#f0efe9;color:#1a1a1a;border-color:#bbb}
+.af-chip-grammar.on{background:#E6F1FB;color:#185FA5;border-color:#B5D4F4}
+.af-chip-vocab.on{background:#EAF3DE;color:#3B6D11;border-color:#C0DD97}
+.af-chip-structure.on{background:#EEEDFE;color:#534AB7;border-color:#CECBF6}
+.af-chip-style.on{background:#FAEEDA;color:#854F0B;border-color:#FAC775}
+.af-group{margin-bottom:1.25rem}
+.af-group-title{font-size:12px;font-weight:500;color:#999;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.af-group-title span{font-weight:400;font-size:11px;color:#bbb;text-transform:none;letter-spacing:0}
+.af-fb-item{display:flex;gap:10px;padding:10px 12px;background:#f9f8f5;border-radius:12px;margin-bottom:6px}
+.af-empty{padding:2rem;text-align:center;font-size:13px;color:#aaa}
+
+/* ── write form ── */
+.write-area{display:flex;flex-direction:column;gap:10px}
+.write-area input,.write-area textarea{width:100%;padding:8px 12px;font-size:13px;border:0.5px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;font-family:inherit}
+.write-area textarea{resize:vertical;min-height:140px;line-height:1.7}
+.lang-sel{display:flex;gap:6px}
+.lbtn{padding:6px 16px;font-size:13px;border:0.5px solid #ccc;border-radius:8px;background:#fff;color:#666;cursor:pointer}
+.lbtn.sel-en{background:#E6F1FB;color:#185FA5;border-color:#85B7EB;font-weight:500}
+.lbtn.sel-de{background:#EAF3DE;color:#3B6D11;border-color:#97C459;font-weight:500}
+.act-row{display:flex;gap:8px;align-items:center}
+.ai-btn{padding:8px 18px;font-size:13px;font-weight:500;border:none;border-radius:8px;background:#1a1a1a;color:#fff;cursor:pointer}
+.ai-btn:hover{opacity:0.85}
+.ai-btn:disabled{opacity:0.4;cursor:not-allowed}
+.dots{display:flex;gap:4px;align-items:center}
+.dot{width:6px;height:6px;border-radius:50%;background:#888;animation:bop 1s infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes bop{0%,100%{opacity:.25}50%{opacity:1}}
+.hidden{display:none}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;color:#aaa;padding:3rem;text-align:center}
+.empty p{font-size:14px}
+.err{font-size:13px;color:#a32d2d;padding:10px;background:#FCEBEB;border-radius:8px}
+.section-lbl{font-size:12px;color:#666;margin-bottom:6px}
+.sync-indicator{font-size:11px;color:#aaa;padding:0 1.5rem 8px;text-align:right}
+</style>
+</head>
+<body>
+
+<!-- ── AUTH OVERLAY ── -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-title">✏️ 교정 아카이브</div>
+    <div class="auth-sub">로그인하면 어느 기기에서든 접속 가능해요</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">로그인</button>
+      <button class="auth-tab"        id="tab-signup" onclick="switchAuthTab('signup')">회원가입</button>
+    </div>
+    <div class="auth-field">
+      <label>이메일</label>
+      <input type="email" id="authEmail" placeholder="example@email.com">
+    </div>
+    <div class="auth-field">
+      <label>비밀번호</label>
+      <input type="password" id="authPw" placeholder="6자 이상" onkeydown="if(event.key==='Enter')submitAuth()">
+    </div>
+    <button class="auth-submit" id="authSubmit" onclick="submitAuth()">로그인</button>
+    <div class="auth-msg" id="authMsg"></div>
+  </div>
+</div>
+
+<!-- ── MAIN APP ── -->
+<div class="app">
+  <div class="sidebar">
+    <div class="sb-top">
+      <div class="sb-row">
+        <span class="sb-title">교정 아카이브</span>
+        <div class="sb-actions">
+          <button class="allf-btn" id="allfBtn" onclick="showAllFeedback()">피드백</button>
+          <button class="new-btn"  onclick="showNew()">+ 새 작문</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="fchip fchip-all on" id="f-all" onclick="setLangFilter('all')">전체</span>
+        <span class="fchip fchip-en"     id="f-en"  onclick="setLangFilter('en')">&#127482;&#127480; 영어</span>
+        <span class="fchip fchip-de"     id="f-de"  onclick="setLangFilter('de')">&#127465;&#127466; 독일어</span>
+      </div>
+    </div>
+    <div class="sb-search">
+      <input type="text" placeholder="제목·내용 검색..." id="searchInput" oninput="renderList()">
+    </div>
+    <div class="entries" id="entriesList"></div>
+    <div class="sb-user">
+      <span class="sb-user-email" id="userEmail"></span>
+      <button class="signout-btn" onclick="signOut()">로그아웃</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="toolbar">
+      <span class="toolbar-title" id="mainTitle">작문을 선택하거나 새로 추가하세요</span>
+      <div class="vtoggle hidden" id="vtoggle">
+        <button class="vbtn active" id="vb-compare"   onclick="setView('compare')">전/후 비교</button>
+        <button class="vbtn"        id="vb-highlight" onclick="setView('highlight')">하이라이트</button>
+        <button class="vbtn"        id="vb-feedback"  onclick="setView('feedback')">피드백</button>
+      </div>
+      <button class="del-btn hidden" id="delBtn" onclick="deleteEntry()">삭제</button>
+    </div>
+    <div class="sync-indicator" id="syncIndicator"></div>
+    <div class="content" id="contentArea">
+      <div class="empty">
+        <div style="font-size:36px">&#9999;&#65039;</div>
+        <p>왼쪽에서 항목을 선택하거나<br>새 작문을 추가하세요</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── SUPABASE INIT ── */
+var SB_URL  = 'https://ezcdrwxzzidvrvwuehre.supabase.co';
+var SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6Y2Ryd3h6emlkdnJ2d3VlaHJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMDMxNDYsImV4cCI6MjA5MDg3OTE0Nn0.ykBWdovdQK6OmhNQSCJ_CL52UpCVUshT6mT4Q24382o';
+var sb      = supabase.createClient(SB_URL, SB_KEY);
+var sbUser  = null;
+var saveTimer = null;
+
+/* ── APP STATE ── */
+var entries = [], curId = null, curView = 'compare', langFilter = 'all', hlMode = 'both';
+var afTypeFilter = 'all';
+var selLang = 'en';
+
+/* ════════════════════════════
+   AUTH
+════════════════════════════ */
+var authMode = 'login';
+
+function switchAuthTab(mode) {
+  authMode = mode;
+  document.getElementById('tab-login').classList.toggle('active', mode==='login');
+  document.getElementById('tab-signup').classList.toggle('active', mode==='signup');
+  document.getElementById('authSubmit').textContent = mode==='login' ? '로그인' : '회원가입';
+  document.getElementById('authMsg').textContent = '';
+}
+
+function setAuthMsg(msg, isErr) {
+  var el = document.getElementById('authMsg');
+  el.textContent = msg;
+  el.className = 'auth-msg ' + (isErr===false ? 'ok' : 'err');
+}
+
+async function submitAuth() {
+  var email = (document.getElementById('authEmail').value||'').trim();
+  var pw    = (document.getElementById('authPw').value||'').trim();
+  if (!email || !pw) { setAuthMsg('이메일과 비밀번호를 입력해주세요.'); return; }
+  if (pw.length < 6) { setAuthMsg('비밀번호는 6자 이상이어야 해요.'); return; }
+  var btn = document.getElementById('authSubmit');
+  btn.disabled = true;
+  setAuthMsg(authMode==='login' ? '로그인 중...' : '가입 중...');
+
+  if (authMode === 'signup') {
+    var res = await sb.auth.signUp({email: email, password: pw});
+    if (res.error) { setAuthMsg(res.error.message); btn.disabled=false; return; }
+    setAuthMsg('가입 완료! 이메일을 확인해주세요. (확인 후 로그인해주세요)', false);
+    btn.disabled = false;
+  } else {
+    var res = await sb.auth.signInWithPassword({email: email, password: pw});
+    if (res.error) { setAuthMsg('이메일 또는 비밀번호가 올바르지 않아요.'); btn.disabled=false; return; }
+    /* onAuthStateChange handles the rest */
+  }
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  entries = []; curId = null;
+  document.getElementById('authOverlay').classList.remove('hidden');
+}
+
+/* ════════════════════════════
+   SUPABASE DATA
+════════════════════════════ */
+async function loadFromDB() {
+  setSyncMsg('불러오는 중...');
+  var res = await sb.from('writing_corrections').select('data').eq('user_id', sbUser.id).maybeSingle();
+  if (res.error) { setSyncMsg('불러오기 실패'); return; }
+  if (res.data && res.data.data) {
+    entries = res.data.data;
+  } else {
+    entries = [];
+  }
+  setSyncMsg('');
+  renderList();
+}
+
+async function saveToDB() {
+  if (!sbUser) return;
+  setSyncMsg('저장 중...');
+  var res = await sb.from('writing_corrections').upsert(
+    {user_id: sbUser.id, data: entries, updated_at: new Date().toISOString()},
+    {onConflict: 'user_id'}
+  );
+  if (res.error) { setSyncMsg('저장 실패 ⚠'); return; }
+  setSyncMsg('저장됨 ✓');
+  setTimeout(function(){ setSyncMsg(''); }, 2000);
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveToDB, 1000);
+}
+
+function setSyncMsg(msg) {
+  document.getElementById('syncIndicator').textContent = msg;
+}
+
+/* ════════════════════════════
+   SIDEBAR
+════════════════════════════ */
+function renderList() {
+  var q = (document.getElementById('searchInput').value||'').toLowerCase();
+  var filtered = entries.filter(function(e) {
+    if (langFilter !== 'all' && e.lang !== langFilter) return false;
+    return !q || e.title.toLowerCase().indexOf(q)>=0 || e.original.toLowerCase().indexOf(q)>=0;
+  });
+  var html = '';
+  if (filtered.length) {
+    filtered.forEach(function(e) {
+      var tagHtml = (e.tags||[]).map(function(t){ return '<span class="tag tg-'+t+'">'+t+'</span>'; }).join('');
+      var flag = e.lang==='en' ? '&#127482;&#127480; EN' : '&#127465;&#127466; DE';
+      html += '<div class="eitem'+(e.id===curId?' active':'')+'" onclick="selectEntry(\''+e.id+'\')"><div class="etitle">'+e.title+'</div><div class="emeta"><span class="lang-badge lb-'+e.lang+'">'+flag+'</span><span>'+e.date+'</span></div><div>'+tagHtml+'</div></div>';
+    });
+  } else {
+    html = '<div style="padding:1.5rem;text-align:center;font-size:13px;color:#aaa">'+(entries.length?'결과 없음':'아직 작문이 없어요')+'</div>';
+  }
+  document.getElementById('entriesList').innerHTML = html;
+}
+
+function setLangFilter(l) {
+  langFilter = l;
+  ['all','en','de'].forEach(function(x){ document.getElementById('f-'+x).className='fchip fchip-'+x+(x===l?' on':''); });
+  renderList();
+}
+
+/* ════════════════════════════
+   ENTRY SELECTION & VIEWS
+════════════════════════════ */
+function selectEntry(id) {
+  curId = id; curView = 'compare'; hlMode = 'both';
+  document.getElementById('allfBtn').classList.remove('active');
+  renderList();
+  var e = entries.filter(function(x){ return x.id===id; })[0];
+  document.getElementById('mainTitle').textContent = e.title;
+  document.getElementById('vtoggle').classList.remove('hidden');
+  document.getElementById('delBtn').classList.remove('hidden');
+  syncViewBtns();
+  renderContent();
+}
+
+function setView(v) {
+  curView = v;
+  if (v==='highlight') hlMode = 'both';
+  syncViewBtns();
+  renderContent();
+}
+
+function syncViewBtns() {
+  ['compare','highlight','feedback'].forEach(function(x){
+    var btn = document.getElementById('vb-'+x);
+    if (btn) btn.className = 'vbtn'+(x===curView?' active':'');
+  });
+}
+
+function renderContent() {
+  var e = entries.filter(function(x){ return x.id===curId; })[0];
+  if (!e) return;
+  var area = document.getElementById('contentArea');
+
+  if (curView==='compare') {
+    area.innerHTML =
+      '<div class="compare-grid"><div class="tcard"><div class="tcard-lbl">원문</div><p>'+e.original+'</p></div><div class="tcard"><div class="tcard-lbl">교정본</div><p>'+e.corrected+'</p></div></div>'
+      +'<div style="margin-top:10px;display:flex;justify-content:flex-end">'
+      +'<span class="lang-badge lb-'+e.lang+'" style="font-size:12px;padding:4px 10px">'+(e.lang==='en'?'&#127482;&#127480; 영어':'&#127465;&#127466; 독일어')+'</span>'
+      +'</div>';
+
+  } else if (curView==='highlight') {
+    area.innerHTML =
+      '<div class="hlmode-bar">'
+      +'<div class="hltoggle">'
+      +'<button class="hlbtn'+(hlMode==='both'?' active':'')+'" id="hlb-both" onclick="setHlMode(\'both\')">전+후</button>'
+      +'<button class="hlbtn'+(hlMode==='orig'?' active':'')+'" id="hlb-orig" onclick="setHlMode(\'orig\')">전</button>'
+      +'<button class="hlbtn'+(hlMode==='corr'?' active':'')+'" id="hlb-corr" onclick="setHlMode(\'corr\')">후</button>'
+      +'</div>'
+      +'<div class="hl-legend"><span class="hl-del" style="text-decoration:none">삭제</span><span class="hl-add">추가</span><span class="hl-change">변경</span></div>'
+      +'</div>'
+      +'<div class="tcard"><div class="prose" id="hlProse"></div></div>';
+    renderHlContent(e);
+
+  } else {
+    /* ── feedback view: list + add form ── */
+    var iconMap = {grammar:'G',vocab:'V',structure:'S',style:'St'};
+    var fbHtml = '<div class="fb-section">';
+    if (!(e.feedback&&e.feedback.length)) {
+      fbHtml += '<div style="font-size:13px;color:#aaa;padding:1rem 0">아직 피드백이 없어요. 아래에서 추가해주세요.</div>';
+    } else {
+      (e.feedback||[]).forEach(function(f,fi){
+        fbHtml += '<div class="fb-item">'
+          +'<div class="fb-icon fi-'+f.type+'">'+(iconMap[f.type]||'?')+'</div>'
+          +'<div style="flex:1"><div class="fb-label">'+f.label+'</div><div class="fb-text">'+f.text+'</div></div>'
+          +'<button onclick="deleteFeedback(\''+curId+'\','+fi+')" style="border:none;background:none;color:#ccc;cursor:pointer;font-size:16px;line-height:1;padding:0 2px;flex-shrink:0" title="삭제">&#215;</button>'
+          +'</div>';
+      });
+    }
+    /* add form */
+    fbHtml +=
+      '</div>'
+      +'<div class="fb-add-form">'
+      +'<div class="section-lbl" style="margin-bottom:6px">피드백 추가</div>'
+      +'<div style="display:flex;gap:6px;margin-bottom:8px">'
+      +'<select id="fbType" style="flex:1;padding:6px 8px;font-size:12px;border:0.5px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a">'
+      +'<option value="grammar">문법</option>'
+      +'<option value="vocab">어휘</option>'
+      +'<option value="structure">구조</option>'
+      +'<option value="style">스타일</option>'
+      +'</select>'
+      +'<input id="fbLabel" type="text" placeholder="레이블 (예: 관사 생략)" style="flex:2;padding:6px 10px;font-size:12px;border:0.5px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a">'
+      +'</div>'
+      +'<textarea id="fbText" placeholder="피드백 내용을 입력하세요..." style="width:100%;padding:8px 10px;font-size:13px;border:0.5px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;resize:vertical;min-height:72px;font-family:inherit"></textarea>'
+      +'<button onclick="addFeedback(\''+curId+'\')" style="margin-top:8px;padding:7px 16px;font-size:13px;font-weight:500;border:none;border-radius:8px;background:#1a1a1a;color:#fff;cursor:pointer">추가 →</button>'
+      +'</div>';
+    area.innerHTML = fbHtml;
+  }
+}
+
+/* ════════════════════════════
+   HIGHLIGHT
+════════════════════════════ */
+function setHlMode(m) {
+  hlMode = m;
+  ['both','orig','corr'].forEach(function(x){
+    var btn = document.getElementById('hlb-'+x);
+    if (btn) btn.className = 'hlbtn'+(x===m?' active':'');
+  });
+  var e = entries.filter(function(x){ return x.id===curId; })[0];
+  if (e) renderHlContent(e);
+}
+
+function renderHlContent(e) {
+  var prose = document.getElementById('hlProse');
+  if (!prose) return;
+  if (hlMode==='both')      prose.innerHTML = diffBoth(e.original, e.corrected);
+  else if (hlMode==='orig') prose.innerHTML = diffOrig(e.original, e.corrected);
+  else                      prose.innerHTML = diffCorr(e.original, e.corrected);
+}
+
+function lcs(a,b) {
+  var dp=[],i,j;
+  for(i=0;i<=a.length;i++){dp[i]=[];for(j=0;j<=b.length;j++)dp[i][j]=0;}
+  for(i=1;i<=a.length;i++)for(j=1;j<=b.length;j++)dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1]);
+  var pairs=[]; i=a.length; j=b.length;
+  while(i>0&&j>0){if(a[i-1]===b[j-1]){pairs.unshift([i-1,j-1]);i--;j--;}else if(dp[i-1][j]>dp[i][j-1])i--;else j--;}
+  return pairs;
+}
+function diffBoth(orig,corr){var ow=orig.split(/\s+/),cw=corr.split(/\s+/),m=lcs(ow,cw),res='',oi=0,ci=0,k,a,b;for(k=0;k<m.length;k++){a=m[k][0];b=m[k][1];while(oi<a||ci<b){if(oi<a&&ci<b)res+='<span class="hl-change">'+ow[oi++]+' → '+cw[ci++]+'</span> ';else if(oi<a)res+='<span class="hl-del">'+ow[oi++]+'</span> ';else res+='<span class="hl-add">'+cw[ci++]+'</span> ';}res+=ow[a]+' ';oi=a+1;ci=b+1;}while(oi<ow.length)res+='<span class="hl-del">'+ow[oi++]+'</span> ';while(ci<cw.length)res+='<span class="hl-add">'+cw[ci++]+'</span> ';return res;}
+function diffOrig(orig,corr){var ow=orig.split(/\s+/),cw=corr.split(/\s+/),m=lcs(ow,cw),res='',oi=0,ci=0,k,a,b;for(k=0;k<m.length;k++){a=m[k][0];b=m[k][1];while(oi<a||ci<b){if(oi<a&&ci<b){res+='<span class="hl-change">'+ow[oi++]+'</span> ';ci++;}else if(oi<a)res+='<span class="hl-del">'+ow[oi++]+'</span> ';else ci++;}res+=ow[a]+' ';oi=a+1;ci=b+1;}while(oi<ow.length)res+='<span class="hl-del">'+ow[oi++]+'</span> ';return res;}
+function diffCorr(orig,corr){var ow=orig.split(/\s+/),cw=corr.split(/\s+/),m=lcs(ow,cw),res='',oi=0,ci=0,k,a,b;for(k=0;k<m.length;k++){a=m[k][0];b=m[k][1];while(oi<a||ci<b){if(oi<a&&ci<b){res+='<span class="hl-change">'+cw[ci++]+'</span> ';oi++;}else if(ci<b)res+='<span class="hl-add">'+cw[ci++]+'</span> ';else oi++;}res+=cw[b]+' ';oi=a+1;ci=b+1;}while(ci<cw.length)res+='<span class="hl-add">'+cw[ci++]+'</span> ';return res;}
+
+/* ════════════════════════════
+   ALL FEEDBACK PAGE
+════════════════════════════ */
+function showAllFeedback() {
+  curId = null; afTypeFilter = 'all';
+  document.getElementById('allfBtn').classList.add('active');
+  document.getElementById('vtoggle').classList.add('hidden');
+  document.getElementById('delBtn').classList.add('hidden');
+  document.getElementById('mainTitle').textContent = '피드백 모아보기';
+  renderList();
+  renderAllFeedback();
+}
+
+function setAfTypeFilter(t) {
+  afTypeFilter = t;
+  ['all','grammar','vocab','structure','style'].forEach(function(x){
+    var el = document.getElementById('af-chip-'+x);
+    if (el) el.className = 'af-chip af-chip-'+x+(x===t?' on':'');
+  });
+  renderAllFeedbackList();
+}
+
+function renderAllFeedback() {
+  var total = entries.reduce(function(s,e){ return s+(e.feedback?e.feedback.length:0); }, 0);
+  document.getElementById('contentArea').innerHTML =
+    '<div class="af-header">'
+    +'<span class="af-title">전체 피드백 <span style="font-size:12px;font-weight:400;color:#aaa">'+total+'개</span></span>'
+    +'<div class="af-filters">'
+    +'<span class="af-chip af-chip-all on"       id="af-chip-all"       onclick="setAfTypeFilter(\'all\')">전체</span>'
+    +'<span class="af-chip af-chip-grammar"       id="af-chip-grammar"   onclick="setAfTypeFilter(\'grammar\')">문법</span>'
+    +'<span class="af-chip af-chip-vocab"         id="af-chip-vocab"     onclick="setAfTypeFilter(\'vocab\')">어휘</span>'
+    +'<span class="af-chip af-chip-structure"     id="af-chip-structure" onclick="setAfTypeFilter(\'structure\')">구조</span>'
+    +'<span class="af-chip af-chip-style"         id="af-chip-style"     onclick="setAfTypeFilter(\'style\')">스타일</span>'
+    +'</div></div>'
+    +'<div id="afList"></div>';
+  renderAllFeedbackList();
+}
+
+function renderAllFeedbackList() {
+  var iconMap = {grammar:'G',vocab:'V',structure:'S',style:'St'};
+  var typeLabel = {grammar:'문법',vocab:'어휘',structure:'구조',style:'스타일'};
+  var container = document.getElementById('afList');
+  if (!container) return;
+  var items = [];
+  entries.forEach(function(e) {
+    (e.feedback||[]).forEach(function(f) {
+      if (afTypeFilter==='all' || f.type===afTypeFilter) items.push({entry:e, fb:f});
+    });
+  });
+  if (!items.length) { container.innerHTML='<div class="af-empty">해당하는 피드백이 없습니다</div>'; return; }
+  var grouped={}, order=[];
+  items.forEach(function(item){
+    var eid=item.entry.id;
+    if(!grouped[eid]){grouped[eid]={entry:item.entry,fbs:[]};order.push(eid);}
+    grouped[eid].fbs.push(item.fb);
+  });
+  var html='';
+  order.forEach(function(eid){
+    var g=grouped[eid],e=g.entry;
+    var flag=e.lang==='en'?'&#127482;&#127480;':'&#127465;&#127466;';
+    html+='<div class="af-group"><div class="af-group-title">'+flag+' <span onclick="selectEntry(\''+e.id+'\')" style="cursor:pointer;color:#185FA5;font-size:12px;font-weight:500;text-transform:none;letter-spacing:0">'+e.title+'</span> <span>'+e.date+' · '+g.fbs.length+'개</span></div>';
+    g.fbs.forEach(function(f){
+      html+='<div class="af-fb-item"><div class="fb-icon fi-'+f.type+'">'+(iconMap[f.type]||'?')+'</div><div><div class="fb-label">'+f.label+' <span class="tag tg-'+f.type+'" style="margin-left:4px">'+(typeLabel[f.type]||f.type)+'</span></div><div class="fb-text">'+f.text+'</div></div></div>';
+    });
+    html+='</div>';
+  });
+  container.innerHTML=html;
+}
+
+/* ════════════════════════════
+   DELETE
+════════════════════════════ */
+function deleteEntry() {
+  if(!curId) return;
+  if(!confirm('이 항목을 삭제할까요?')) return;
+  entries=entries.filter(function(e){return e.id!==curId;});
+  scheduleSave(); curId=null;
+  document.getElementById('vtoggle').classList.add('hidden');
+  document.getElementById('delBtn').classList.add('hidden');
+  document.getElementById('mainTitle').textContent='작문을 선택하거나 새로 추가하세요';
+  document.getElementById('contentArea').innerHTML='<div class="empty"><div style="font-size:36px">&#9999;&#65039;</div><p>왼쪽에서 항목을 선택하거나<br>새 작문을 추가하세요</p></div>';
+  renderList();
+}
+
+/* ════════════════════════════
+   NEW ENTRY FORM
+════════════════════════════ */
+function showNew() {
+  curId=null; selLang='en';
+  document.getElementById('allfBtn').classList.remove('active');
+  document.getElementById('vtoggle').classList.add('hidden');
+  document.getElementById('delBtn').classList.add('hidden');
+  document.getElementById('mainTitle').textContent='새 작문 추가';
+  renderList();
+  document.getElementById('contentArea').innerHTML=
+    '<div class="write-area">'
+    +'<div class="section-lbl">언어 선택</div>'
+    +'<div class="lang-sel"><button class="lbtn sel-en" id="lb-en" onclick="pickLang(\'en\')">&#127482;&#127480; 영어</button><button class="lbtn" id="lb-de" onclick="pickLang(\'de\')">&#127465;&#127466; 독일어</button></div>'
+    +'<div class="section-lbl" style="margin-top:4px">제목</div>'
+    +'<input id="newTitle" type="text" placeholder="예: Mein Wochenende / My hobby">'
+    +'<div class="section-lbl">원문 입력</div>'
+    +'<textarea id="newText" placeholder="여기에 영어 또는 독일어로 작성하세요..." style="min-height:110px"></textarea>'
+    +'<div class="section-lbl">교정본 입력</div>'
+    +'<textarea id="corrText" placeholder="교정한 내용을 입력하세요..." style="min-height:110px"></textarea>'
+    +'<div class="act-row"><button class="ai-btn" onclick="saveManual()">저장 →</button></div>'
+    +'</div>';
+}
+
+function pickLang(l) {
+  selLang=l;
+  document.getElementById('lb-en').className='lbtn'+(l==='en'?' sel-en':'');
+  document.getElementById('lb-de').className='lbtn'+(l==='de'?' sel-de':'');
+}
+
+function saveManual() {
+  var title    = (document.getElementById('newTitle').value||'').trim() || '제목 없음';
+  var original = (document.getElementById('newText').value||'').trim();
+  var corrected= (document.getElementById('corrText').value||'').trim();
+  if (!original) { alert('원문을 입력해주세요.'); return; }
+  if (!corrected) { alert('교정본을 입력해주세요.'); return; }
+  var ne = {
+    id: 'e'+Date.now(), lang: selLang, title: title,
+    date: new Date().toISOString().slice(0,10),
+    original: original, corrected: corrected,
+    tags: [], score: {grammar:null, vocab:null, overall:null}, feedback: []
+  };
+  entries.unshift(ne);
+  scheduleSave();
+  curId=ne.id; curView='compare'; hlMode='both';
+  document.getElementById('allfBtn').classList.remove('active');
+  document.getElementById('vtoggle').classList.remove('hidden');
+  document.getElementById('delBtn').classList.remove('hidden');
+  document.getElementById('mainTitle').textContent=title;
+  syncViewBtns(); renderList(); renderContent();
+}
+
+/* ── score display helper ── */
+function sc(e, key) {
+  if (!e.score) return '—';
+  var v = e.score[key];
+  return (v === null || v === undefined) ? '—' : v;
+}
+
+/* ════════════════════════════
+   FEEDBACK ADD / DELETE
+════════════════════════════ */
+function addFeedback(eid) {
+  var type  = (document.getElementById('fbType').value||'grammar');
+  var label = (document.getElementById('fbLabel').value||'').trim();
+  var text  = (document.getElementById('fbText').value||'').trim();
+  if (!label) { alert('레이블을 입력해주세요.'); return; }
+  if (!text)  { alert('피드백 내용을 입력해주세요.'); return; }
+  var e = entries.filter(function(x){ return x.id===eid; })[0];
+  if (!e) return;
+  if (!e.feedback) e.feedback = [];
+  e.feedback.push({type:type, label:label, text:text});
+  scheduleSave();
+  renderContent();
+}
+
+function deleteFeedback(eid, idx) {
+  var e = entries.filter(function(x){ return x.id===eid; })[0];
+  if (!e||!e.feedback) return;
+  e.feedback.splice(idx, 1);
+  scheduleSave();
+  renderContent();
+}
+
+/* ════════════════════════════
+   INIT — Auth State Listener
+════════════════════════════ */
+sb.auth.onAuthStateChange(function(event, session) {
+  if (session && session.user) {
+    sbUser = session.user;
+    document.getElementById('authOverlay').classList.add('hidden');
+    document.getElementById('userEmail').textContent = sbUser.email;
+    loadFromDB();
+  } else {
+    sbUser = null;
+    entries = [];
+    document.getElementById('authOverlay').classList.remove('hidden');
+  }
+});
+</script>
+</body>
+</html>
